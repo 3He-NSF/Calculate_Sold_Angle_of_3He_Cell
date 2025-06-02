@@ -40,3 +40,7 @@ myenv*/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Document files
+*.pdf
+*.key
