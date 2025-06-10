@@ -29,14 +29,14 @@ class ScatteringAngleCalculator {
         const sampleEdgeY_bottom = -sampleWidth / 2;
         const cellEdgeX_bottom = cellPositionX + this.cellLength / 2;
         const cellEdgeY_bottom = -this.cellWidth / 2;
-        const theta_bottom = Math.atan2(cellEdgeY_bottom - sampleEdgeY_bottom, cellEdgeX_bottom - sampleEdgeX_bottom);
-        const detectorEdgeY_bottom = sampleEdgeY_bottom + (detectorPositionX - sampleEdgeX_bottom) * Math.tan(theta_bottom);
+        const theta_2 = Math.atan2(cellEdgeY_bottom - sampleEdgeY_bottom, cellEdgeX_bottom - sampleEdgeX_bottom);
+        const detectorEdgeY_2 = sampleEdgeY_bottom + (detectorPositionX - sampleEdgeX_bottom) * Math.tan(theta_2);
 
         // 検出器での幅
-        return Math.abs(detectorEdgeY_top - detectorEdgeY_bottom);
+        return Math.abs(detectorEdgeY_top - detectorEdgeY_2);
     }
 
-    plotCoverage(cellPositionX, detectorPositionX, sampleWidth) {
+    plotCoverage(cellPositionX, cellPositionY, detectorPositionX, sampleWidth) {
         const angles = this.calculateAngles(cellPositionX, sampleWidth);
         const detectorCoverage = this.calculateDetectorWidth(cellPositionX, detectorPositionX, sampleWidth);
 
@@ -48,20 +48,20 @@ class ScatteringAngleCalculator {
 
         // Cell vertices
         const cellVertices = [
-            [cellPositionX - this.cellLength/2, 0],
-            [cellPositionX + this.cellLength/2, 0],
-            [cellPositionX + this.cellLength/2, this.cellWidth/2],
-            [cellPositionX - this.cellLength/2, this.cellWidth/2],
-            [cellPositionX - this.cellLength/2, 0]
+            [cellPositionX - this.cellLength/2, cellPositionY - this.cellWidth/2],
+            [cellPositionX + this.cellLength/2, cellPositionY - this.cellWidth/2],
+            [cellPositionX + this.cellLength/2, cellPositionY + this.cellWidth/2],
+            [cellPositionX - this.cellLength/2, cellPositionY + this.cellWidth/2],
+            [cellPositionX - this.cellLength/2, cellPositionY - this.cellWidth/2]
         ];
 
         // Coil vertices
         const coilVertices = [
-            [cellPositionX - this.coilLength/2, 0],
-            [cellPositionX + this.coilLength/2, 0],
-            [cellPositionX + this.coilLength/2, this.coilWidth/2],
-            [cellPositionX - this.coilLength/2, this.coilWidth/2],
-            [cellPositionX - this.coilLength/2, 0]
+            [cellPositionX - this.coilLength/2, cellPositionY - this.coilWidth/2],
+            [cellPositionX + this.coilLength/2, cellPositionY - this.coilWidth/2],
+            [cellPositionX + this.coilLength/2, cellPositionY + this.coilWidth/2],
+            [cellPositionX - this.coilLength/2, cellPositionY + this.coilWidth/2],
+            [cellPositionX - this.coilLength/2, cellPositionY - this.coilWidth/2]
         ];
 
         // Detector vertices
@@ -70,28 +70,69 @@ class ScatteringAngleCalculator {
             [detectorPositionX + 1, 0],
             [detectorPositionX + 1, this.detectorWidth/2],
             [detectorPositionX, this.detectorWidth/2],
-            [detectorPositionX, 0]
+            [detectorPositionX, 0],
+            [detectorPositionX, -this.detectorWidth/2],
+            [detectorPositionX + 1, -this.detectorWidth/2],
+            [detectorPositionX + 1, 0]
         ];
 
-        // サンプル上端
+        // サンプル上端・下端
         const sampleEdgeX = 0;
         const sampleEdgeY = sampleWidth / 2;
-        // セル右上端
+        const sampleEdgeY_bottom = -sampleEdgeY;
+        // セル右上端・右下端
         const cellEdgeX = cellPositionX + this.cellLength / 2;
-        const cellEdgeY = this.cellWidth / 2;
-        // 傾きθ
-        const theta = Math.atan2(cellEdgeY - sampleEdgeY, cellEdgeX - sampleEdgeX);
+        const cellEdgeY = cellPositionY + this.cellWidth / 2;
+        const cellEdgeY_bottom = cellPositionY - this.cellWidth / 2;
         // 検出器端
         const detectorEdgeX = detectorPositionX;
-        const detectorEdgeY = sampleEdgeY + (detectorEdgeX - sampleEdgeX) * Math.tan(theta);
 
+        // Scattering Angle 1: サンプル上端→セル右上端→検出器端
+        const theta1 = Math.atan2(cellEdgeY - sampleEdgeY, cellEdgeX - sampleEdgeX);
+        const detectorEdgeY1 = sampleEdgeY + (detectorEdgeX - sampleEdgeX) * Math.tan(theta1);
         const scatteringLine = {
             x: [sampleEdgeX, cellEdgeX, detectorEdgeX],
-            y: [sampleEdgeY, cellEdgeY, detectorEdgeY],
+            y: [sampleEdgeY, cellEdgeY, detectorEdgeY1],
+            type: 'scatter',
+            mode: 'lines',
+            line: { dash: 'dot', color: 'red', width: 1 },
+            name: 'Scattering Angle 1'
+        };
+
+        // Scattering Angle 2: サンプル下端→セル右下端→検出器端
+        const theta2 = Math.atan2(cellEdgeY_bottom - sampleEdgeY_bottom, cellEdgeX - sampleEdgeX);
+        const detectorEdgeY2 = sampleEdgeY_bottom + (detectorEdgeX - sampleEdgeX) * Math.tan(theta2);
+        const scatteringLineBottomBottom = {
+            x: [sampleEdgeX, cellEdgeX, detectorEdgeX],
+            y: [sampleEdgeY_bottom, cellEdgeY_bottom, detectorEdgeY2],
+            type: 'scatter',
+            mode: 'lines',
+            line: { dash: 'dot', color: 'red', width: 1 },
+            name: 'Scattering Angle 2'
+        };
+
+        // Scattering Angle 3: サンプル上端→セル右下端→検出器端
+        const theta3 = Math.atan2(cellEdgeY_bottom - sampleEdgeY, cellEdgeX - sampleEdgeX);
+        const detectorEdgeY3 = sampleEdgeY + (detectorEdgeX - sampleEdgeX) * Math.tan(theta3);
+        const scatteringLineBottom = {
+            x: [sampleEdgeX, cellEdgeX, detectorEdgeX],
+            y: [sampleEdgeY, cellEdgeY_bottom, detectorEdgeY3],
             type: 'scatter',
             mode: 'lines',
             line: { dash: 'dot', color: 'black', width: 1 },
-            name: 'Scattering Angle'
+            name: 'Scattering Angle 3'
+        };
+
+        // Scattering Angle 4: サンプル下端→セル右上端→検出器端
+        const theta4 = Math.atan2(cellEdgeY - sampleEdgeY_bottom, cellEdgeX - sampleEdgeX);
+        const detectorEdgeY4 = sampleEdgeY_bottom + (detectorEdgeX - sampleEdgeX) * Math.tan(theta4);
+        const scatteringLineBottomTop = {
+            x: [sampleEdgeX, cellEdgeX, detectorEdgeX],
+            y: [sampleEdgeY_bottom, cellEdgeY, detectorEdgeY4],
+            type: 'scatter',
+            mode: 'lines',
+            line: { dash: 'dot', color: 'black', width: 1 },
+            name: 'Scattering Angle 4'
         };
 
         // Create plot data
@@ -134,7 +175,10 @@ class ScatteringAngleCalculator {
                 fill: 'toself',
                 fillcolor: 'rgba(255,0,0,0.3)'
             },
-            scatteringLine
+            scatteringLine,
+            scatteringLineBottomBottom,
+            scatteringLineBottom,
+            scatteringLineBottomTop
         ];
 
         // Layout settings
@@ -154,7 +198,7 @@ class ScatteringAngleCalculator {
             },
             yaxis: {
                 title: 'Y (mm)',
-                range: [0, Math.max(this.detectorWidth/2, sampleWidth) + 50],
+                range: [-Math.max(this.detectorWidth/2, sampleWidth) - 50, Math.max(this.detectorWidth/2, sampleWidth) + 50],
                 zeroline: true,
                 gridcolor: 'lightgray'
             },
@@ -163,7 +207,8 @@ class ScatteringAngleCalculator {
                 x: 1,
                 y: 1,
                 xanchor: 'right',
-                yanchor: 'top'
+                yanchor: 'top',
+                draggable: true
             },
             margin: { t: 50, r: 120 },
             annotations: [
@@ -172,7 +217,7 @@ class ScatteringAngleCalculator {
                     y: Math.max(this.detectorWidth/2, sampleWidth) + 30,
                     xref: 'x',
                     yref: 'y',
-                    text: `Scattering Angle: ${(angles.scatteringangle * 180 / Math.PI).toFixed(1)}°<br>Detector Coverage: ${detectorCoverage.toFixed(1)}mm`,
+                    text: `${cellPositionY > 0 ? 'Scattering Angle 1' : cellPositionY === 0 ? 'Scattering Angle' : 'Scattering Angle 2'}: ${cellPositionY === 0 ? '±' : ''}${((cellPositionY >= 0 ? theta1 : theta2) * 180 / Math.PI).toFixed(1)}°<br>Detector Coverage: ±${detectorCoverage.toFixed(1)/2}mm`,
                     showarrow: false,
                     font: {
                         size: 14,
@@ -189,7 +234,11 @@ class ScatteringAngleCalculator {
         };
 
         // Draw plot
-        Plotly.newPlot('plot', data, layout);
+        const config = {
+            editable: true,
+            dragmode: 'pan'
+        };
+        Plotly.newPlot('plot', data, layout, config);
     }
 }
 
@@ -213,9 +262,10 @@ function updatePlot() {
 
     const sampleWidth = parseFloat(document.getElementById('sampleWidth').value);
     const cellPosition = parseFloat(document.getElementById('cellPosition').value);
+    const cellPositionY = parseFloat(document.getElementById('cellPositionY').value);
     const detectorPosition = parseFloat(document.getElementById('detectorPosition').value);
 
-    calculator.plotCoverage(cellPosition, detectorPosition, sampleWidth);
+    calculator.plotCoverage(cellPosition, cellPositionY, detectorPosition, sampleWidth);
 }
 
 // Initialize
