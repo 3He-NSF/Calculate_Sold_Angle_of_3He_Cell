@@ -36,7 +36,7 @@ class ScatteringAngleCalculator {
         return Math.abs(detectorEdgeY_top - detectorEdgeY_2);
     }
 
-    plotCoverage(cellPositionX, cellPositionY, detectorPositionX, sampleWidth) {
+    plotCoverage(cellPositionX, cellPositionY, detectorPositionX, sampleWidth, showLegend = true) {
         const angles = this.calculateAngles(cellPositionX, sampleWidth);
         const detectorCoverage = this.calculateDetectorWidth(cellPositionX, detectorPositionX, sampleWidth);
 
@@ -202,7 +202,7 @@ class ScatteringAngleCalculator {
                 zeroline: true,
                 gridcolor: 'lightgray'
             },
-            showlegend: true,
+            showlegend: showLegend,
             legend: {
                 x: 1,
                 y: 1,
@@ -247,6 +247,7 @@ function setupEventListeners() {
     const inputs = document.querySelectorAll('input');
     inputs.forEach(input => {
         input.addEventListener('input', updatePlot);
+        input.addEventListener('change', updatePlot);
     });
 }
 
@@ -264,8 +265,9 @@ function updatePlot() {
     const cellPosition = parseFloat(document.getElementById('cellPosition').value);
     const cellPositionY = parseFloat(document.getElementById('cellPositionY').value);
     const detectorPosition = parseFloat(document.getElementById('detectorPosition').value);
+    const showLegend = document.getElementById('showLegend').checked;
 
-    calculator.plotCoverage(cellPosition, cellPositionY, detectorPosition, sampleWidth);
+    calculator.plotCoverage(cellPosition, cellPositionY, detectorPosition, sampleWidth, showLegend);
 }
 
 // Initialize
